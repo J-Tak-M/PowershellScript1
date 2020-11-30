@@ -1,0 +1,55 @@
+#Starts while loop that continues until $Compname is equal to 1
+While ( $Compname -notmatch '1')
+{
+#Takes input for the $Compname variable
+$Compname = Read-Host 'If you want to check the logs of a computer please input the computer name, if not type 1 to exit'
+
+    #If statement to run commands if $Compname does not equal one
+    if ( $Compname -notmatch '1'){
+        
+        #HTML code for creating a table
+        $Header = @"
+<style>
+TABLE {
+border-width: 2px; 
+border-style: solid; 
+border-color: black; 
+border-collapse: collapse;}
+
+TH {border-width: 2px; 
+padding: 6px; 
+border-style: solid; 
+border-color: black; 
+background-color: #DAA520; 
+text-align: left;
+font-family: "Times New Roman", Times, serif;}
+
+TD {border-width: 2px; 
+padding: 6px; 
+border-style: solid; 
+border-color: black; 
+background-color: #E6E6FA; 
+vertical-align: top; 
+font-family: "Times New Roman", Times, serif;}
+</style>
+"@
+        
+        #Creates new HTML file with the including the $Compname variable, day, month, and year, and this will overwrite a file of the same name.
+        New-Item -Path ('C:\Users\Administrator\Documents\Logs\' + $Compname + (get-date -format 'dd-MM-yyyy') + '.html') -ItemType File -Force
+
+        #Outputs system event logs, under the category of 'Error', then pipes that data through html, inputting it into a table, then outputting it to a previously made file
+        Get-EventLog -LogName System -ComputerName $Compname -After (Get-Date).AddHours(-12) | Where {$_.EntryType -eq 'Error'} | ConvertTo-Html -Head $Header -Title ($Compname + "Event Logs") | Out-File -FilePath ('C:\Users\Administrator\Documents\Logs\' + $Compname + (get-date -format 'dd-MM-yyyy') +'.html')
+        
+        #Outputs system event logs, under the category of 'Warning', then pipes that data through html, inputting it into a table, then outputting it to a previously made file
+        Get-EventLog -LogName System -ComputerName $Compname -After (Get-Date).AddHours(-12) | Where {$_.EntryType -eq 'Warning'} | ConvertTo-Html -Head $Header -Title ($Compname + "Event Logs") | Out-File -FilePath ('C:\Users\Administrator\Documents\Logs\' + $Compname + (get-date -format 'dd-MM-yyyy') +'.html') -Append
+        
+        #Outputs Application event logs, under the category of 'Error', then pipes that data through html, inputting it into a table, then outputting it to a previously made file
+        Get-EventLog -LogName Application -ComputerName $Compname -After (Get-Date).AddHours(-12) | Where {$_.EntryType -eq 'Error'} | ConvertTo-Html -Head $Header -Title ($Compname + "Event Logs") | Out-File -FilePath ('C:\Users\Administrator\Documents\Logs\' + $Compname + (get-date -format 'dd-MM-yyyy') +'.html') -Append
+        
+        #Outputs Application event logs, under the category of 'Warning', then pipes that data through html, inputting it into a table, then outputting it to a previously made file
+        Get-EventLog -LogName Application -ComputerName $Compname -After (Get-Date).AddHours(-12) | Where {$_.EntryType -eq 'Warning'} | ConvertTo-Html -Head $Header -Title ($Compname + "Event Logs") | Out-File -FilePath ('C:\Users\Administrator\Documents\Logs\' + $Compname + (get-date -format 'dd-MM-yyyy') +'.html') -Append}
+   
+}
+
+#Clears variable of data
+Clear-Variable -Name "Compname" 
